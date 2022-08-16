@@ -1,9 +1,15 @@
-from root import Root
+from init import Root
 
-class transformations(Root):
+class Transformations(Root):
     def brightness(self, section, factor):
-        pass
+        sectionidx = 0
+        while sectionidx < len(section):
+            idx = 0
+            while idx < len(section[sectionidx]):
+                section[sectionidx][idx] = section[sectionidx][idx] - factor
+                idx += 1
+            sectionidx += 1
 
-    def dimensions(self, section, factor):
-        pass
-
+    def enlarge_image(self, pil_image):
+        enlarged = pil_image.resize((56, 56))
+        return enlarged
