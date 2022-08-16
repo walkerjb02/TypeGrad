@@ -10,6 +10,7 @@ class Frontend:
     def frontend(self):
         self.root = Tk()
         self.root.title('TypeGrad')
+        self.root.iconbitmap("2207-removebg-preview.ico")
         coolgrey = '#464a4f'
         canvas1 = Canvas(self.root, width=370, height=300, bg='#ffffff',
                             bd=10)
@@ -29,5 +30,3 @@ class Frontend:
         filemenu = Menu(Menu(), tearoff=10)
         self.root.config(menu=filemenu)
         self.root.mainloop()
-
-
