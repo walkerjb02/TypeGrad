@@ -1,13 +1,14 @@
-from root import Root
 from utils import *
 import json
 
-class get_loc(Root):
+class GetLoc(Root):
     def bounds(self, inputheight, dimension):
         heightidx = 1
         bounds = []
         if dimension == 1:
             colorthresh = 16
+        elif dimension == 3:
+            colorthresh = 21
         else:
             colorthresh = 6
 
@@ -27,7 +28,38 @@ class get_loc(Root):
                 bounds.append(ondeck)
             else:
                 heightidx += 1
+
         return bounds
+
+    def cut_long(self, letters):
+        letteridx = 0
+        while letteridx < len(letters):
+            if len(letters[letteridx]) < 1:
+                del letters[letteridx]
+
+            elif len(letters[letteridx]) >= 1:
+                boundidx = 0
+                while boundidx < len(letters[letteridx]):
+                    if letters[letteridx][boundidx][1] - letters[letteridx][boundidx][0] > (56 * 2) or letters[letteridx][boundidx][1] - letters[letteridx][boundidx][0] <= 15:
+                        del letters[letteridx][boundidx]
+
+                    elif letters[letteridx][boundidx][1] - letters[letteridx][boundidx][0] >= (56 * 1.5):
+                        avg = int((letters[letteridx][boundidx][1] + letters[letteridx][boundidx][0]) / 2)
+                        second_half = [avg, letters[letteridx][boundidx][1]]
+                        letters[letteridx].append(second_half)
+                        letters[letteridx][boundidx] = [letters[letteridx][boundidx][0], avg]
+                        boundidx += 1
+
+                    elif letters[letteridx][boundidx][1] - letters[letteridx][boundidx][0] > 56:
+                        avg = int((letters[letteridx][boundidx][1] + letters[letteridx][boundidx][0]) / 2)
+                        letters[letteridx][boundidx] = [avg - 28, avg + 28]
+                        boundidx += 1
+
+                    else:
+                        boundidx += 1
+
+                letteridx += 1
+        return letters
 
     def stitch_bounds(self, bounds):
         idx = 0
@@ -52,27 +84,25 @@ class get_loc(Root):
 
         return output
 
-    def condense(self):
+    def condense(self, transformation, widthstart, widthstop):
         with open('StorageLen.json', 'r+') as file:
             init = json.loads(file.read())
             indexer = 0
             while indexer < len(init["Bounds"]):
                 bounds = init["Bounds"][indexer]
                 condensed = []
-                section = utils().get_section(width=self.width,heightstart=bounds[0], heightstop=bounds[1], pixels=self.pixels, iterindex=indexer)
+                section = Utils().get_section(widthstart=widthstart, widthstop=widthstop, heightstart=bounds[0], heightstop=bounds[1], pixels=self.pixels, iterindex=indexer)
                 sectionidx = 0
                 while sectionidx < len(section):
                     #TODO apply random weights n-values from normdist
                     #section[sectionidx] = section[sectionidx] * [i * 1e-2 for i in range(0,len(section[sectionidx]))]
-                    #print(section[sectionidx])
-                    #print('\n\n\n')
-                    condensed.append(sum(section[sectionidx]) / len(section[sectionidx]))
+                    condensed.append((sum(section[sectionidx]) / len(section[sectionidx]) - transformation))
                     sectionidx += 1
-
-                utils().to_json(indexer,"Sections",[condensed])
+                if transformation == 0:
+                    Utils().to_json(indexer, "Sections", [condensed])
+                else:
+                    Utils().to_json(indexer, "Letters", [condensed])
                 indexer += 1
-
-            return section
 
     def clear_noise(self, words):
         boundidx = 0
@@ -84,9 +114,4 @@ class get_loc(Root):
 
         return words
 
-    def apply_angle(self, section, height):
-        idx = 0
-        while idx < height:
-            section[idx] = section[idx]
 
-            idx += 1
