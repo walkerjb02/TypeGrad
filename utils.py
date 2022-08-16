@@ -71,8 +71,9 @@ class Utils(Root):
 
     def get_for_network(self, bounds, letters):
         pass
-
+    
     def pad_image(self, array):
-        pad_amount = 56 - (array[1] - array[0])
+        pad_amount = 56 - (array.shape[2])
         padded = np.pad(array, [0, pad_amount], mode='constant')
         return padded
+
