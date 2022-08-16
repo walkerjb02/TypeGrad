@@ -1,14 +1,10 @@
 import numpy as np
 import json
-from root import Root
+from init import Root
+from PIL import Image
 import math
 
-'''
-Notes
-Average Handwriting Rightward Slant [60,75] degrees
-'''
-
-class utils(Root):
+class Utils(Root):
     def to_json(self, suffix, category, contents):
         fp = r'C:\Users\gsbaw\PycharmProjects\TypeGrad\Lib'
         with open(r'{}\Storage{}.json'.format(fp,suffix),'r+') as file:
@@ -45,18 +41,17 @@ class utils(Root):
             file.write(f'lst = [{lst}]')
         return lst
 
-    def get_section(self, width, heightstart, heightstop, pixels, iterindex):
+    def get_section(self, widthstart, widthstop, heightstart, heightstop, pixels, iterindex):
         section = []
         fp = r'C:\Users\gsbaw\PycharmProjects\TypeGrad\Lib'
         if iterindex != -1:
-            widthindexer = 0
+            widthindexer = widthstart
         else:
-            widthindexer = width - 1
+            widthindexer = widthstop - 1
         # pull every fourth line
-        while widthindexer < width:
+        while widthindexer < widthstop:
             indexer = heightstart
             ondeck = []
-
             while indexer < (heightstop):
                 r, g, b = pixels[widthindexer, indexer]
                 avgval = (255 - ((r + g + b) / 3))
@@ -68,11 +63,16 @@ class utils(Root):
             # Writes to storage.json if first time
             widthindexer += 1
 
-        with open(r"{}\Storage{}.json".format(fp, 'Len' if iterindex == -1 else iterindex), 'r+') as firstfile:
-            fal = json.loads(firstfile.read())
-            fal["Sections"].append(section)
-            serialized = json.dumps(fal)
-            with open(r"{}\Storage{}.json".format(fp, 'Len' if iterindex == -1 else iterindex), 'w') as file:
-                file.write(serialized)
-
         return section
+
+    def to_PIL(self, input_array):
+        image = Image.fromarray(np.uint8(input_array))
+        return image
+
+    def get_for_network(self, bounds, letters):
+        pass
+
+    def pad_image(self, array):
+        pad_amount = 56 - (array[1] - array[0])
+        padded = np.pad(array, [0, pad_amount], mode='constant')
+        return padded
