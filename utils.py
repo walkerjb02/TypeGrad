@@ -2,7 +2,7 @@ import numpy as np
 import json
 from init import Root
 from PIL import Image
-import math
+from transformations import Transformations
 
 class Utils(Root):
     def to_json(self, suffix, category, contents):
@@ -48,13 +48,12 @@ class Utils(Root):
             widthindexer = widthstart
         else:
             widthindexer = widthstop - 1
-        # pull every fourth line
         while widthindexer < widthstop:
             indexer = heightstart
             ondeck = []
             while indexer < (heightstop):
                 r, g, b = pixels[widthindexer, indexer]
-                avgval = (255 - ((r + g + b) / 3))
+                avgval = (254 - ((r + g + b) / 3))
                 ondeck.append(avgval)
                 indexer += 1
             ondeck[-1] = 1
@@ -69,11 +68,31 @@ class Utils(Root):
         image = Image.fromarray(np.uint8(input_array))
         return image
 
-    def get_for_network(self, bounds, letters):
-        pass
-    
-    def pad_image(self, array):
-        pad_amount = 56 - (array.shape[2])
-        padded = np.pad(array, [0, pad_amount], mode='constant')
-        return padded
+    def get_for_network(self, letters):
+        sectionidx = 0
+        finalized_images = []
+        with open('StorageLen.json', 'r+') as file:
+            bounds = json.loads(file.read())["Bounds"]
+            while sectionidx < len(letters):
+                wordidx = 0
+                if len(letters[sectionidx]) > 0:
+                    while wordidx < len(letters[sectionidx]):
+                        numerical_img = Utils().get_section(letters[sectionidx][wordidx][0],
+                                                            letters[sectionidx][wordidx][1],
+                                                            bounds[sectionidx][1] - 56,
+                                                            bounds[sectionidx][1],
+                                                            self.pixels,
+                                                            0)
+                        numerical_img = Transformations().rotate_image(numerical_img)
+                        numerical_img = Utils().pad_image(numerical_img)
+                        finalized_images.append(numerical_img)
 
+                        wordidx += 1
+                else: pass
+                sectionidx += 1
+        return np.array(finalized_images)
+
+    def pad_image(self, array):
+        pad_amount = 56 - (array.shape[1])
+        padded = np.pad(array, [[0,0], [0,pad_amount]], mode='constant')
+        return padded
