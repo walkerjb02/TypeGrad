@@ -1,4 +1,5 @@
 from init import Root
+import numpy as np
 
 class Transformations(Root):
     def brightness(self, section, factor):
@@ -13,3 +14,10 @@ class Transformations(Root):
     def enlarge_image(self, pil_image):
         enlarged = pil_image.resize((56, 56))
         return enlarged
+
+    def rotate_image(self, nparray):
+        nparray = np.array(nparray).T
+        return nparray
+
+
+
