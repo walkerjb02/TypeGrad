@@ -1,6 +1,7 @@
 from utils import *
 import json
 
+
 class GetLoc(Root):
     def bounds(self, inputheight, dimension):
         heightidx = 1
@@ -35,8 +36,7 @@ class GetLoc(Root):
         letteridx = 0
         while letteridx < len(letters):
             if len(letters[letteridx]) < 1:
-                del letters[letteridx]
-
+                pass
             elif len(letters[letteridx]) >= 1:
                 boundidx = 0
                 while boundidx < len(letters[letteridx]):
@@ -58,7 +58,8 @@ class GetLoc(Root):
                     else:
                         boundidx += 1
 
-                letteridx += 1
+
+            letteridx += 1
         return letters
 
     def stitch_bounds(self, bounds):
@@ -79,7 +80,7 @@ class GetLoc(Root):
         error = 2
         output.append([0,bounds[indexer][0]])
         while indexer < len(bounds) - 1:
-            output.append([bounds[indexer][1] - error, bounds[indexer + 1][0] + error + 0])
+            output.append([bounds[indexer][1] - error, bounds[indexer + 1][0] + error + 9])
             indexer += 1
 
         return output
@@ -88,21 +89,18 @@ class GetLoc(Root):
         with open('StorageLen.json', 'r+') as file:
             init = json.loads(file.read())
             indexer = 0
+            output = []
             while indexer < len(init["Bounds"]):
                 bounds = init["Bounds"][indexer]
                 condensed = []
                 section = Utils().get_section(widthstart=widthstart, widthstop=widthstop, heightstart=bounds[0], heightstop=bounds[1], pixels=self.pixels, iterindex=indexer)
                 sectionidx = 0
                 while sectionidx < len(section):
-                    #TODO apply random weights n-values from normdist
-                    #section[sectionidx] = section[sectionidx] * [i * 1e-2 for i in range(0,len(section[sectionidx]))]
                     condensed.append((sum(section[sectionidx]) / len(section[sectionidx]) - transformation))
                     sectionidx += 1
-                if transformation == 0:
-                    Utils().to_json(indexer, "Sections", [condensed])
-                else:
-                    Utils().to_json(indexer, "Letters", [condensed])
+                output.append([condensed])
                 indexer += 1
+            return output
 
     def clear_noise(self, words):
         boundidx = 0
@@ -113,5 +111,4 @@ class GetLoc(Root):
                 boundidx += 1
 
         return words
-
 
